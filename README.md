@@ -10,11 +10,22 @@ A simple Neovim plugin to show the type of the variable under the cursor in a no
 
 ## Installation
 
+### [lazy.nvim](https://github.com/folke/lazy.nvim)
+
+```lua
+{
+  'sim-maz/show-type.nvim',
+  config = function()
+    require('show_type').setup()
+  end
+}
+```
+
 ### [packer.nvim](https://github.com/wbthomason/packer.nvim)
 
 ```lua
 use {
-  'your-github-username/show-type.nvim',
+  'sim-maz/show-type.nvim',
   config = function()
     require('show_type').setup()
   end
@@ -24,7 +35,7 @@ use {
 ### [vim-plug](https://github.com/junegunn/vim-plug)
 
 ```vim
-Plug 'your-github-username/show-type.nvim'
+Plug 'sim-maz/show-type.nvim'
 ```
 
 Then, in your `init.lua` or somewhere after the plugin is loaded:
