@@ -51,20 +51,43 @@ The `setup` function accepts a configuration table. The following options are av
 
 ### Example with `mini.notify`
 
-To use `mini.notify`, you can configure it like this. This example includes a check to see if `mini.notify` is available, and falls back to the standard `vim.notify` if it's not. This is recommended to avoid errors if `mini.notify` is not loaded.
+To use `mini.notify`, you can provide a custom `notify_func` in the `setup` call.
 
 ```lua
 require('show_type').setup({
   notify_func = function(msg)
-    -- Use mini.notify if it's available, otherwise fall back to vim.notify
+    -- This safely checks if mini.notify is available
     local success, mini_notify = pcall(require, 'mini.notify')
-    if success then
+    if success and mini_notify and mini_notify.make then
       mini_notify.make(msg, 'info', { title = 'Type' })()
     else
       vim.notify(msg, vim.log.levels.INFO, { title = 'Type' })
     end
   end
 })
+```
+
+**Important Note for `lazy.nvim` users:**
+If you use `lazy.nvim` and want to use `mini.notify` with this plugin, you must explicitly declare the dependency to ensure `mini.nvim` is loaded first. Here is a complete example for your `lazy.nvim` configuration:
+
+```lua
+{
+  'sim-maz/show-type.nvim',
+  dependencies = { 'echasnovski/mini.nvim' },
+  config = function()
+    require('show_type').setup({
+      notify_func = function(msg)
+        -- Your notify_func using mini.notify
+        local success, mini_notify = pcall(require, 'mini.notify')
+        if success and mini_notify and mini_notify.make then
+          mini_notify.make(msg, 'info', { title = 'Type' })()
+        else
+          vim.notify(msg, vim.log.levels.INFO, { title = 'Type' })
+        end
+      end
+    })
+  end,
+}
 ```
 
 ## Usage
