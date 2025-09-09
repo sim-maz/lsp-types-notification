@@ -55,7 +55,15 @@ end
 
 function M.show()
   local bufnr = vim.api.nvim_get_current_buf()
-  local params = vim.lsp.util.make_position_params()
+
+  -- Get position_encoding from the active LSP client to avoid a warning.
+  local clients = vim.lsp.get_clients({ bufnr = bufnr })
+  local encoding = 'utf-16' -- A safe default if no client is found.
+  if clients and #clients > 0 and clients[1].offset_encoding then
+    encoding = clients[1].offset_encoding
+  end
+
+  local params = vim.lsp.util.make_position_params(0, encoding)
 
   local handler = function(results_map)
     if not results_map or vim.tbl_isempty(results_map) then
