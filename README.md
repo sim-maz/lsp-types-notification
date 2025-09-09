@@ -14,7 +14,7 @@ A simple Neovim plugin to show the type of the variable under the cursor in a no
 
 ```lua
 {
-  'sim-maz/show-type.nvim',
+  'your-github-username/show-type.nvim',
   config = function()
     require('show_type').setup()
   end
@@ -25,7 +25,7 @@ A simple Neovim plugin to show the type of the variable under the cursor in a no
 
 ```lua
 use {
-  'sim-maz/show-type.nvim',
+  'your-github-username/show-type.nvim',
   config = function()
     require('show_type').setup()
   end
@@ -35,7 +35,7 @@ use {
 ### [vim-plug](https://github.com/junegunn/vim-plug)
 
 ```vim
-Plug 'sim-maz/show-type.nvim'
+Plug 'your-github-username/show-type.nvim'
 ```
 
 Then, in your `init.lua` or somewhere after the plugin is loaded:
