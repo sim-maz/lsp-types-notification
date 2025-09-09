@@ -1,15 +1,47 @@
 local M = {}
 
-local config = {
-  notify_func = function(msg)
-    vim.notify(msg, vim.log.levels.INFO, { title = "Type" })
+-- Default notification function using vim.notify
+local function default_notify(msg)
+  vim.notify(msg, vim.log.levels.INFO, { title = "Type" })
+end
+
+-- Notification function for mini.notify, with a fallback to the default.
+local function mini_notify_func(msg)
+  if _G.MiniNotify and _G.MiniNotify.make_notify then
+    local notify = _G.MiniNotify.make_notify()
+    notify(msg, vim.log.levels.INFO, { title = 'Type', timeout = 5000 })
+  else
+    default_notify(msg)
   end
+end
+
+-- Notification function for nvim-notify
+local function nvim_notify_func(msg)
+  local success, notify = pcall(require, 'notify')
+  if success and notify then
+    notify(msg, 'info', { title = 'Type' })
+  else
+    default_notify(msg)
+  end
+end
+
+local config = {
+  -- This will be the function called to show notifications.
+  -- It is set during the setup function.
+  notify = default_notify,
 }
 
 function M.setup(user_config)
   user_config = user_config or {}
-  for k, v in pairs(user_config) do
-    config[k] = v
+
+  -- The user can provide a custom notification function.
+  if user_config.notify_func then
+    config.notify = user_config.notify_func
+  -- Or they can specify a provider by name for convenience.
+  elseif user_config.notification_provider == 'mini.notify' then
+    config.notify = mini_notify_func
+  elseif user_config.notification_provider == 'nvim-notify' then
+    config.notify = nvim_notify_func
   end
 end
 
@@ -23,7 +55,6 @@ local function get_type_from_hover(results_map)
     if client_response.result and client_response.result.contents then
       local contents = client_response.result.contents
       if type(contents) == "table" then
-        -- Handle MarkupContent
         if contents.value then
           message = message .. contents.value .. "\n"
         end
@@ -37,10 +68,8 @@ local function get_type_from_hover(results_map)
     return nil
   end
 
-  -- This is a heuristic. Different LSPs format hover results differently.
   local type_info = message:match("```[a-zA-Z_]*\n(.-)```")
   if not type_info then
-    -- Fallback for non-markdown content
     local lines = vim.split(message, "\n")
     type_info = lines[1]
   end
@@ -52,13 +81,11 @@ local function get_type_from_hover(results_map)
   return type_info:gsub("^%s*", ""):gsub("%s*$", "")
 end
 
-
 function M.show()
   local bufnr = vim.api.nvim_get_current_buf()
 
-  -- Get position_encoding from the active LSP client to avoid a warning.
   local clients = vim.lsp.get_clients({ bufnr = bufnr })
-  local encoding = 'utf-16' -- A safe default if no client is found.
+  local encoding = 'utf-16'
   if clients and #clients > 0 and clients[1].offset_encoding then
     encoding = clients[1].offset_encoding
   end
@@ -67,16 +94,16 @@ function M.show()
 
   local handler = function(results_map)
     if not results_map or vim.tbl_isempty(results_map) then
-      config.notify_func("No type information found.")
+      config.notify("No type information found.")
       return
     end
 
     local type_info = get_type_from_hover(results_map)
 
     if type_info and type_info ~= "" then
-      config.notify_func(type_info)
+      config.notify(type_info)
     else
-      config.notify_func("No type information found.")
+      config.notify("No type information found.")
     end
   end
 
