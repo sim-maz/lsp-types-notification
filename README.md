@@ -51,12 +51,18 @@ The `setup` function accepts a configuration table. The following options are av
 
 ### Example with `mini.notify`
 
-To use `mini.notify`, you can configure it like this:
+To use `mini.notify`, you can configure it like this. This example includes a check to see if `mini.notify` is available, and falls back to the standard `vim.notify` if it's not. This is recommended to avoid errors if `mini.notify` is not loaded.
 
 ```lua
 require('show_type').setup({
   notify_func = function(msg)
-    require('mini.notify').make(msg, 'info', { title = 'Type' })()
+    -- Use mini.notify if it's available, otherwise fall back to vim.notify
+    local success, mini_notify = pcall(require, 'mini.notify')
+    if success then
+      mini_notify.make(msg, 'info', { title = 'Type' })()
+    else
+      vim.notify(msg, vim.log.levels.INFO, { title = 'Type' })
+    end
   end
 })
 ```
@@ -72,6 +78,4 @@ vim.keymap.set('n', '<Leader>st', '<cmd>ShowType<cr>', { desc = 'Show Type' })
 
 ## How it works
 
-This plugin temporarily overrides the `textDocument/hover` LSP handler to capture the hover information without displaying the floating window. It then parses the hover information to extract the type and displays it using the configured notification function.
-
-This approach is a bit of a hack, but it's a simple and effective way to get the type information without requiring a custom LSP client.
+This plugin uses `vim.lsp.buf_request_all` to send a `textDocument/hover` request to the LSP server. This is done without triggering the default hover UI (floating window). It then parses the hover information to extract the type and displays it using the configured notification function.
