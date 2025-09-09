@@ -53,19 +53,27 @@ function M.show()
   local bufnr = vim.api.nvim_get_current_buf()
   local params = vim.lsp.util.make_position_params()
 
-  local handler = function(_, result, _, _)
-    if not result or vim.tbl_isempty(result) then
-      config.notify_func("No type information found.")
+  local handler = function(err, result, _, _)
+    if err then
+      config.notify_func("LSP Error: " .. vim.inspect(err))
       return
     end
 
-    local type_info = get_type_from_hover(result)
-
-    if type_info and type_info ~= "" then
-      config.notify_func(type_info)
-    else
-      config.notify_func("No type information found.")
+    if not result or vim.tbl_isempty(result) then
+      config.notify_func("No type information found (empty or nil result).")
+      return
     end
+
+    -- For debugging, show the structure of the result
+    config.notify_func("LSP Result: " .. vim.inspect(result))
+
+    -- local type_info = get_type_from_hover(result)
+
+    -- if type_info and type_info ~= "" then
+    --   config.notify_func(type_info)
+    -- else
+    --   config.notify_func("No type information found.")
+    -- end
   end
 
   vim.lsp.buf_request_all(bufnr, 'textDocument/hover', params, handler)
